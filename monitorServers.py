@@ -78,54 +78,64 @@ def change_server():
 
 
 def should_downgrade_server():
-    df = pd.read_csv('cpu_usage.csv')
-    aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
-    average_ram_usage = aggregat_usage_for_downgrade['RAM'].mean()
-    average_cpu_usage = aggregat_usage_for_downgrade['CPU'].mean()
+    while True:
+        try:
+            df = pd.read_csv('cpu_usage.csv')
+            aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
+            average_ram_usage = aggregat_usage_for_downgrade['RAM'].mean()
+            average_cpu_usage = aggregat_usage_for_downgrade['CPU'].mean()
 
-    logging.info(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
-    
-    if average_cpu_usage <= downgrade_percent or average_ram_usage <= downgrade_percent :
-        if average_cpu_usage <= downgrade_percent:
-            logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage below {downgrade_percent}% threshold')
-        if average_ram_usage <= downgrade_percent:
-            logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold')
-            get_update_server_name('downgrade')
-            if NEW_SERVER:
-                API.power_off_server()
-                time.sleep(3)
-                change_server()
-                logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
-                time.sleep(25)
-                logging.info(API.get_current_server_type())
-            else:
-                logging.error('There was a problem in downgrading server type. Server could be at highest level')
+            logging.info(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
+            
+            if average_cpu_usage <= downgrade_percent or average_ram_usage <= downgrade_percent :
+                if average_cpu_usage <= downgrade_percent:
+                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage below {downgrade_percent}% threshold: {average_cpu_usage}%')
+                if average_ram_usage <= downgrade_percent:
+                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold: {average_ram_usage}%')
+                get_update_server_name('downgrade')
+                
+                if NEW_SERVER:
+                    API.power_off_server()
+                    time.sleep(3)
+                    change_server()
+                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
+                    time.sleep(25)
+                    logging.info(API.get_current_server_type())
+                    diskWriter.empty_file_contents()
+                else:
+                    logging.error('There was a problem in downgrading server type. Server could be at lowest level')
 
-    aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({" CPU": "mean", " RAM ": "mean"})
-    average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
-    average_cpu_usage = aggregat_usage_for_upgrade['CPU'].mean()
-    
-    if average_cpu_usage >= upgrade_percent or average_ram_usage >= upgrade_percent :
-        if average_cpu_usage >= upgrade_percent:
-            logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage above {upgrade_percent}% threshold')
-        if average_ram_usage >= upgrade_percent:
-            get_update_server_name('upgrade')
-            if NEW_SERVER:
-                API.power_off_server()
-                time.sleep(3)
-                change_server()
-                logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold :{average_ram_usage}%')
-                time.sleep(25)
-                logging.info(API.get_current_server_type())
-                # diskWriter.empty_file_contents()
-            else:
-                logging.error('There was a problem in upgrading server type. Server could be at highest level')
+            aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({" CPU": "mean", " RAM ": "mean"})
+            average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
+            average_cpu_usage = aggregat_usage_for_upgrade['CPU'].mean()
+            
+            if average_cpu_usage >= upgrade_percent or average_ram_usage >= upgrade_percent :
+                if average_cpu_usage >= upgrade_percent:
+                    logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage above {upgrade_percent}% threshold: {average_cpu_usage}%')
+                if average_ram_usage >= upgrade_percent:
+                    logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold: {average_ram_usage}%')
 
-    print(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
+                get_update_server_name('upgrade')
+                if NEW_SERVER:
+                    API.power_off_server()
+                    time.sleep(3)
+                    change_server()
+                    logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold :{average_ram_usage}%')
+                    time.sleep(25)
+                    logging.info(API.get_current_server_type())
+                    diskWriter.empty_file_contents()
+                else:
+                    logging.error('There was a problem in upgrading server type. Server could be at highest level')
+
+            print(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
+        except :
+            logging.info("No data in the csv file. This happens after a fresh run of the script or after a server change")
+        time.sleep(10)
 
 
-# disk_writer_thread = threading.Thread(target=diskWriter.write_cpu_usage)
-# disk_writer_thread.start()
+disk_writer_thread = threading.Thread(target=diskWriter.write_cpu_usage)
+disk_writer_thread.start()
+
 should_downgrade_server()
 
 # API.power_off_server()

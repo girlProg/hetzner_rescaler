@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# project specific
+activitylog.log
+cpu_usage.csv
+config.json
+venv
