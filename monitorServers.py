@@ -105,7 +105,7 @@ def should_downgrade_server():
                 else:
                     logging.error('There was a problem in downgrading server type. Server could be at lowest level')
 
-            aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({" CPU": "mean", " RAM ": "mean"})
+            aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
             average_cpu_usage = aggregat_usage_for_upgrade['CPU'].mean()
             
