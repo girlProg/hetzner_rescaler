@@ -118,7 +118,7 @@ def should_downgrade_server():
             aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
             average_cpu_usage = aggregat_usage_for_upgrade['CPU'].mean()
-            get_update_server_name('downgrade')
+            get_update_server_name('update')
             if average_cpu_usage >= upgrade_percent or average_ram_usage >= upgrade_percent :
                 if average_cpu_usage >= upgrade_percent:
                     logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage above {upgrade_percent}% threshold: {average_cpu_usage}%')
