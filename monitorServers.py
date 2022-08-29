@@ -10,6 +10,9 @@ import pandas as pd
 import logging
 import API
 
+
+disk_writer_thread = threading.Thread(target=diskWriter.write_cpu_usage)
+
 logging.basicConfig(filename = 'activitylog.log',
                     level = logging.DEBUG,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
@@ -98,10 +101,11 @@ def should_downgrade_server():
                     API.power_off_server()
                     time.sleep(3)
                     change_server()
-                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
+                    # logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
                     time.sleep(25)
                     logging.info(API.get_current_server_type())
-                    diskWriter.empty_file_contents()
+                    disk_writer_thread.stop()
+                    disk_writer_thread.start()
                 else:
                     logging.error('There was a problem in downgrading server type. Server could be at lowest level')
 
@@ -120,10 +124,11 @@ def should_downgrade_server():
                     API.power_off_server()
                     time.sleep(3)
                     change_server()
-                    logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold :{average_ram_usage}%')
+                    # logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold :{average_ram_usage}%')
                     time.sleep(25)
                     logging.info(API.get_current_server_type())
-                    diskWriter.empty_file_contents()
+                    disk_writer_thread.stop()
+                    disk_writer_thread.start()
                 else:
                     logging.error('There was a problem in upgrading server type. Server could be at highest level')
 
@@ -133,7 +138,6 @@ def should_downgrade_server():
         time.sleep(10)
 
 
-disk_writer_thread = threading.Thread(target=diskWriter.write_cpu_usage)
 disk_writer_thread.start()
 
 should_downgrade_server()
