@@ -22,5 +22,5 @@ def write_cpu_usage():
 # this is necessary with every server downgrade or upgrade
 def empty_file_contents():
     f = open("cpu_usage.csv", "w")
-    f.write(' ')
+    f.write('Number,Time,CPU,RAM\n')
     f.close()
