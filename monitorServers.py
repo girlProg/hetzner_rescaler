@@ -103,7 +103,7 @@ def should_downgrade_server():
                 if average_ram_usage <= downgrade_percent:
                     logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold: {average_ram_usage}%')
             
-                if NEW_SERVER and SHOULD_CHANGE_SERVER:
+                if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
                     API.power_off_server()
                     time.sleep(10)
                     change_server()
@@ -126,7 +126,7 @@ def should_downgrade_server():
                     logging.info(f'Upgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage above {upgrade_percent}% threshold: {average_ram_usage}%')
 
                 
-                if NEW_SERVER and SHOULD_CHANGE_SERVER:
+                if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
                     API.power_off_server()
                     time.sleep(10)
                     change_server()
