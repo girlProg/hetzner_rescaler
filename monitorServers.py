@@ -128,8 +128,8 @@ def should_downgrade_server():
                     logging.error('There was a problem in upgrading server type. Server could be at highest level')
 
             print(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
-        except :
-            logging.info("No data in the csv file. This happens after a fresh run of the script or after a server change")
+        except Exception as e:
+            logging.info("No data in the csv file. This happens after a fresh run of the script or after a server change: " + str(e))
         time.sleep(10)
 
 
