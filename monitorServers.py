@@ -44,13 +44,13 @@ OLD_SERVER = ''
 SHOULD_CHANGE_SERVER = ''
 
 pp = pprint.PrettyPrinter(indent=4)
-
+current_server_types = []
 
 def get_update_server_name(change_type):
     global NEW_SERVER
     global OLD_SERVER
     global SHOULD_CHANGE_SERVER
-    current_server_types = []
+    
     current_server = API.get_current_server_type()
     SHOULD_CHANGE_SERVER = True
     if 'ccx' in current_server:
@@ -96,24 +96,27 @@ def should_downgrade_server():
             average_cpu_usage = aggregat_usage_for_downgrade['CPU'].mean()
 
             logging.info(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
-            get_update_server_name('downgrade')
-            if average_cpu_usage <= downgrade_percent or average_ram_usage <= downgrade_percent :
-                if average_cpu_usage <= downgrade_percent:
-                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage below {downgrade_percent}% threshold: {average_cpu_usage}%')
-                if average_ram_usage <= downgrade_percent:
-                    logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold: {average_ram_usage}%')
-            
-                if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
-                    API.power_off_server()
-                    time.sleep(10)
-                    change_server()
-                    # logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
-                    time.sleep(25)
-                    logging.info(API.get_current_server_type())
-                    diskWriter.empty_file_contents()
-                    NEW_SERVER = ''
-                else:
-                    logging.error('There was a problem in downgrading server type. Server could be at lowest level')
+            server_name = get_update_server_name('downgrade')
+            if server_name != current_server_types[0]:
+                print(server_name + current_server_types[0])
+                # only downgrade if the server is downgradable
+                if average_cpu_usage <= downgrade_percent or average_ram_usage <= downgrade_percent :
+                    if average_cpu_usage <= downgrade_percent:
+                        logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage below {downgrade_percent}% threshold: {average_cpu_usage}%')
+                    if average_ram_usage <= downgrade_percent:
+                        logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold: {average_ram_usage}%')
+                
+                    if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
+                        API.power_off_server()
+                        time.sleep(10)
+                        change_server()
+                        # logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold :{average_ram_usage}%')
+                        time.sleep(25)
+                        logging.info(API.get_current_server_type())
+                        diskWriter.empty_file_contents()
+                        NEW_SERVER = ''
+                    else:
+                        logging.error('There was a problem in downgrading server type. Server could be at lowest level')
 
             aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
