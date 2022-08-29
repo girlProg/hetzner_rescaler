@@ -50,6 +50,7 @@ def get_update_server_name(change_type):
     global NEW_SERVER
     global OLD_SERVER
     global SHOULD_CHANGE_SERVER
+    global current_server_types
     
     current_server = API.get_current_server_type()
     SHOULD_CHANGE_SERVER = True
@@ -88,6 +89,7 @@ def change_server():
 
 def should_downgrade_server():
     global NEW_SERVER
+    global current_server_types
     while True:
         try:
             df = pd.read_csv('cpu_usage.csv')
