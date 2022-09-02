@@ -10,13 +10,13 @@ import pandas as pd
 import logging
 import API
 import multiprocessing
+import psutil
+import paramiko
 
 
-proc = multiprocessing.Process(target=diskWriter.write_cpu_usage, args=())
-disk_writer_thread = threading.Thread(target=diskWriter.write_cpu_usage)
 
 logging.basicConfig(filename = 'activitylog.log',
-                    level = logging.DEBUG,
+                    level = logging.INFO,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
 config_file = open('config.json')
@@ -42,9 +42,58 @@ intel_server_types = [ "cx11", "cx21", "cx31",  "cx41",  "cx51" ]
 NEW_SERVER= ''
 OLD_SERVER = ''
 SHOULD_CHANGE_SERVER = ''
+DISK_WRITER_PID = 0
+should_write_to_file = True
 
 pp = pprint.PrettyPrinter(indent=4)
 current_server_types = []
+
+
+def get_remote_usage():
+    try:
+        HOST=ip_address
+        COMMAND_VM=  " free | grep Mem | awk '{print $3/$2 * 100.0}' && echo \" \"$[100-$(vmstat 1 2|tail -1|awk '{print $15}')]\"\""
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ip_address, 22,  username, password, timeout=3)
+
+        stdin, stdout, stderr = ssh.exec_command(COMMAND_VM, timeout=3)
+        while int(stdout.channel.recv_exit_status()) != 0:
+            time.sleep(1)
+        # print(f"Output: {}")
+        usage =  stdout.read().decode()
+        ssh.close()
+        return usage
+    except Exception as e:
+        write_cpu_usage()
+        
+
+# this is necessary with every server downgrade or upgrade
+def empty_file_contents():
+    f = open("cpu_usage.csv", "w")
+    f.write('Number,Time,CPU,RAM\n')
+    f.close()
+
+
+def write_cpu_usage():
+    global should_write_to_file
+    f = open("cpu_usage.csv", "w")
+    f.write(f"Number,Time,CPU,RAM\n")
+    logging.info("Writing to file started")
+    timer = 1
+    while True:
+        if should_write_to_file:
+            usage = get_remote_usage()
+            if usage:
+                ram_usage = usage.split('\n')[0]
+                cpu_usage = usage.split('\n')[1]
+                
+                f.write(f"{timer}, {datetime.now()}, {cpu_usage}, {ram_usage} \n")
+                f.flush()
+                timer = timer + 1
+                time.sleep(2) #slee for 60 seconds
+            
 
 def get_update_server_name(change_type):
     global NEW_SERVER
@@ -81,15 +130,15 @@ def get_update_server_name(change_type):
             OLD_SERVER = current_server.upper()
             return downgrade_server_name
 
-
 def change_server():
     global NEW_SERVER
     logging.info(API.change_server_type(NEW_SERVER.lower()))
 
-
 def should_downgrade_server():
+    diskWriter.empty_file_contents()
     global NEW_SERVER
     global current_server_types
+    global should_write_to_file
     while True:
         try:
             df = pd.read_csv('cpu_usage.csv')
@@ -99,9 +148,10 @@ def should_downgrade_server():
 
             logging.info(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
             server_name = get_update_server_name('downgrade')
-            if server_name != current_server_types[0]:
-                print(server_name + current_server_types[0])
+            # if server_name != current_server_types[1]:
+                # print(server_name + current_server_types[0])
                 # only downgrade if the server is downgradable
+            if 'cannot' not in server_name:
                 if average_cpu_usage <= downgrade_percent or average_ram_usage <= downgrade_percent :
                     if average_cpu_usage <= downgrade_percent:
                         logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to CPU usage below {downgrade_percent}% threshold: {average_cpu_usage}%')
@@ -109,6 +159,7 @@ def should_downgrade_server():
                         logging.info(f'Downgrading server from {OLD_SERVER} to {NEW_SERVER} due to RAM usage below {downgrade_percent}% threshold: {average_ram_usage}%')
                 
                     if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
+                        should_write_to_file = False
                         API.power_off_server()
                         time.sleep(10)
                         change_server()
@@ -116,9 +167,12 @@ def should_downgrade_server():
                         time.sleep(25)
                         logging.info(API.get_current_server_type())
                         diskWriter.empty_file_contents()
+                        should_write_to_file = True
                         NEW_SERVER = ''
                     else:
-                        logging.error('There was a problem in downgrading server type. Server could be at lowest level')
+                        logging.info('There was a problem in downgrading server type. Server could be at lowest level')
+                else:
+                    logging.info(server_name)
 
             aggregat_usage_for_upgrade = df.rolling(min_periods=1, window=upgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_upgrade['RAM'].mean()
@@ -132,6 +186,7 @@ def should_downgrade_server():
 
                 
                 if NEW_SERVER != "" and SHOULD_CHANGE_SERVER == True:
+                    should_write_to_file = False
                     API.power_off_server()
                     time.sleep(10)
                     change_server()
@@ -139,6 +194,7 @@ def should_downgrade_server():
                     time.sleep(25)
                     logging.info(API.get_current_server_type())
                     diskWriter.empty_file_contents()
+                    should_write_to_file = True 
                     NEW_SERVER = ''
                 else:
                     logging.error('There was a problem in upgrading server type. Server could be at highest level')
@@ -152,7 +208,15 @@ def should_downgrade_server():
 
 
 if __name__ == '__main__':
-    disk_writer_thread.start()
+    # disk_writer_thread.start()
+    # diskWriter.write_cpu_usage()
+    # API.ssh_to_remote()
+    
+    disk_writer_thread = threading.Thread(target=write_cpu_usage)
+
+    disk_writer_thread.start()        
+    # API.power_on_server()
+    # proc.start()
     should_downgrade_server()
 
 # API.power_off_server()

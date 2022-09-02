@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 import json
 import pprint 
 import logging
+import paramiko
+import select
 
 config_file = open('config.json')
 config = json.load(config_file)
@@ -12,20 +14,23 @@ pp = pprint.PrettyPrinter(indent=4)
 
 api_key = config['api_key']
 server_id = config['server_id']
+ip_address = config['ip_address']
+username = config['username']
+password = config['password']
 
 BASE_URL = f'https://api.hetzner.cloud/v1/servers/{server_id}'
 headers = {'User-Agent': 'Mozilla/5.0', "Authorization": f"Bearer {api_key}"}
 
-def supgrade_server():
-    yesterday = (datetime.today() - timedelta(hours=0, minutes=60)).isoformat()
+def get_server_metrics():
+    yesterday = (datetime.today() - timedelta(hours=1, minutes=30)).isoformat()
     today = datetime.today().isoformat()
     result = requests.get(f'{BASE_URL}/metrics?'
                         f'type=cpu&'
-                        f'start={yesterday.isoformat()}&'
+                        f'start={yesterday}&'
                         f'end={today}&' 
-                        f'step=120', 
+                        f'step=100', 
                         headers=headers)
-    print(yesterday.isoformat())
+    print(yesterday)
     pp.pprint(json.loads(result.content))
 
 
@@ -46,7 +51,7 @@ def change_server_type(new_server):
     # upgrade_disk needds to be set to FALSE so that downgrade is possible
     data = {"server_type": new_server,"upgrade_disk": False}
     result = requests.post(f'{BASE_URL}/actions/change_type', headers=headers, data=json.dumps(data))
-    pp.pprint(json.loads(result.content))
+    # pp.pprint(json.loads(result.content))
     if result.status_code == 201:
         return json.loads(result.content)
     else: 
@@ -61,5 +66,6 @@ def get_current_server_type():
 
 def get_all_server_types():
     result = requests.get(f'https://api.hetzner.cloud/v1/server_types', headers=headers)
-    pp.pprint(json.loads(result.content))
+    # pp.pprint(json.loads(result.content))
     return json.loads(result.content)
+
