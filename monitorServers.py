@@ -141,7 +141,7 @@ def should_downgrade_server():
     global should_write_to_file
     while not checkIfMidnight:
         try:
-            df = pd.read_csv('cpu_usage.csv')
+            df = pd.read_csv(os.path.join(ROOT_DIR, "cpu_usage.csv"))
             aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_downgrade['RAM'].mean()
             average_cpu_usage = aggregat_usage_for_downgrade['CPU'].mean()
