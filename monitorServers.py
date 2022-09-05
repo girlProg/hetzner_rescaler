@@ -78,7 +78,7 @@ def empty_file_contents():
 
 def write_cpu_usage():
     global should_write_to_file
-    f = open("cpu_usage.csv", "w")
+    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv", "w"))
     f.write(f"Number,Time,CPU,RAM\n")
     logging.info("Writing to file started")
     timer = 1
