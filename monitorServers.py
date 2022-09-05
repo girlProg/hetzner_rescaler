@@ -139,7 +139,7 @@ def should_downgrade_server():
     global NEW_SERVER
     global current_server_types
     global should_write_to_file
-    while not checkIfMidnight:
+    while not checkIfMidnight():
         try:
             df = pd.read_csv(os.path.join(ROOT_DIR, "cpu_usage.csv"))
             aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
@@ -208,4 +208,5 @@ if __name__ == '__main__':
     disk_writer_thread.start()      
     should_downgrade_server()
 
+    # API.power_off_server()
     # API.power_on_server()
