@@ -141,12 +141,12 @@ def should_downgrade_server():
     global should_write_to_file
     while not checkIfMidnight:
         try:
-            df = pd.read_csv("cpu_usage.csv")
+            df = pd.read_csv(os.path.join(ROOT_DIR, "cpu_usage.csv"))
             aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
             average_ram_usage = aggregat_usage_for_downgrade['RAM'].mean()
             average_cpu_usage = aggregat_usage_for_downgrade['CPU'].mean()
 
-            logging.info(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
+            logging.info(f'CPU: {average_cpu_usage} | RAM: {average_ram_usage}. Over the last {downgrade_duration} minutes')
             server_name = get_update_server_name('downgrade')
             # if server_name != current_server_types[1]:
                 # print(server_name + current_server_types[0])
@@ -195,7 +195,7 @@ def should_downgrade_server():
                 else:
                     logging.error('There was a problem in upgrading server type. Server could be at highest level')
 
-            print(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
+            # print(f'cpu: {average_cpu_usage} ram: {average_ram_usage}. Over the last {downgrade_duration} minutes')
         except Exception as e:
             logging.info("No data in the csv file. This happens after a fresh run of the script or after a server change: " + str(e))
         time.sleep(frequency)
