@@ -11,7 +11,7 @@ import os
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-logging.basicConfig(filename = 'activitylog.log',
+logging.basicConfig(filename = os.path.join(ROOT_DIR, 'activitylog.log'),
                     level = logging.INFO,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
@@ -71,7 +71,7 @@ def get_remote_usage():
 
 # this is necessary with every server downgrade or upgrade
 def empty_file_contents():
-    f = open("cpu_usage.csv", "w")
+    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv", "w"))
     f.write('Number,Time,CPU,RAM\n')
     f.close()
 
