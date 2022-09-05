@@ -41,6 +41,7 @@ should_write_to_file = True
 
 pp = pprint.PrettyPrinter(indent=4)
 current_server_types = []
+is_midnight = datetime.now() == datetime.time(hour=0, minute=0)
 
 
 def get_remote_usage():
@@ -71,11 +72,12 @@ def empty_file_contents():
 
 def write_cpu_usage():
     global should_write_to_file
+    global is_midnight
     f = open("cpu_usage.csv", "w")
     f.write(f"Number,Time,CPU,RAM\n")
     logging.info("Writing to file started")
     timer = 1
-    while True:
+    while not is_midnight:
         if should_write_to_file:
             usage = get_remote_usage()
             if usage:
@@ -132,7 +134,8 @@ def should_downgrade_server():
     global NEW_SERVER
     global current_server_types
     global should_write_to_file
-    while True:
+    global is_midnight
+    while not is_midnight:
         try:
             df = pd.read_csv('cpu_usage.csv')
             aggregat_usage_for_downgrade = df.rolling(min_periods=1, window=downgrade_duration).agg({"CPU": "mean", "RAM": "mean"})
