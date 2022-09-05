@@ -9,11 +9,13 @@ import API
 import paramiko
 import os
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 logging.basicConfig(filename = 'activitylog.log',
                     level = logging.INFO,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
-config_file = open(os.path.abspath('config.json'))
+config_file = open(os.path.join(ROOT_DIR, 'config.json'))
 config = json.load(config_file)
 
 api_key = config['api_key']
