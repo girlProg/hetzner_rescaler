@@ -71,14 +71,14 @@ def get_remote_usage():
 
 # this is necessary with every server downgrade or upgrade
 def empty_file_contents():
-    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv", "w"))
+    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv"), "w")
     f.write('Number,Time,CPU,RAM\n')
     f.close()
 
 
 def write_cpu_usage():
     global should_write_to_file
-    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv", "w"))
+    f = open(os.path.join(ROOT_DIR, "cpu_usage.csv"), "w")
     f.write(f"Number,Time,CPU,RAM\n")
     logging.info("Writing to file started")
     timer = 1
@@ -204,6 +204,8 @@ def should_downgrade_server():
 
 
 if __name__ == '__main__':
-    disk_writer_thread = threading.Thread(target=write_cpu_usage)
-    disk_writer_thread.start()      
-    should_downgrade_server()
+    # disk_writer_thread = threading.Thread(target=write_cpu_usage)
+    # disk_writer_thread.start()      
+    # should_downgrade_server()
+
+    API.power_on_server()
