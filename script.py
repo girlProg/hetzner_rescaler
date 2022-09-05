@@ -1,1 +1,1 @@
-#!/path/to/project/venv/bin/python
+#!/venv/bin/python
