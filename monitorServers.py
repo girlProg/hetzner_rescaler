@@ -7,12 +7,13 @@ import pandas as pd
 import logging
 import API
 import paramiko
+import os
 
 logging.basicConfig(filename = 'activitylog.log',
                     level = logging.INFO,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
-config_file = open('config.json')
+config_file = open(os.path.abspath('config.json'))
 config = json.load(config_file)
 
 api_key = config['api_key']

@@ -7,8 +7,9 @@ import pprint
 import logging
 import paramiko
 import select
+import os
 
-config_file = open('config.json')
+config_file = open(os.path.abspath('config.json'))
 config = json.load(config_file)
 pp = pprint.PrettyPrinter(indent=4)
 
