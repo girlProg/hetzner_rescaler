@@ -204,8 +204,8 @@ def should_downgrade_server():
 
 
 if __name__ == '__main__':
-    # disk_writer_thread = threading.Thread(target=write_cpu_usage)
-    # disk_writer_thread.start()      
-    # should_downgrade_server()
+    disk_writer_thread = threading.Thread(target=write_cpu_usage)
+    disk_writer_thread.start()      
+    should_downgrade_server()
 
-    API.power_on_server()
+    # API.power_on_server()
