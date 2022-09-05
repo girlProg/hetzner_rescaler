@@ -9,7 +9,10 @@ import paramiko
 import select
 import os
 
-config_file = open(os.path.abspath('config.json'))
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+config_file = open(os.path.join(ROOT_DIR, 'config.json'))
 config = json.load(config_file)
 pp = pprint.PrettyPrinter(indent=4)
 
