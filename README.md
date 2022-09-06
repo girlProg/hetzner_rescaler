@@ -1,8 +1,10 @@
+# Hetzner Server Auto-rescaling Script Instructions
+
 # Adding a new Server Monitor to Test Server
 
 To add another Server Changing Script to the ‘test’ server, run the commands below after logging into the server via ssh
 
-`git clone [https://github.com/girlProg/hetzner_server_changer.git](https://github.com/girlProg/hetzner_server_changer.git) <new_server_name>`
+`git clone https://github.com/girlProg/hetzner_rescaler.git <new_server_name>`
 
 you will need to change `<new_server_name>` to the name you would like the new folder to be called. Make sure to name it something you can remember in reference to what the Server does. This will be more important when you have 10 server monitor scripts running and you need to check the logs of a particular server.  Run the next commands
 
