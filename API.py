@@ -8,6 +8,7 @@ import logging
 import paramiko
 import select
 import os
+from hcloud import Client
 
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -65,6 +66,7 @@ def change_server_type(new_server):
 def get_current_server_type():
     result = requests.get(f'{BASE_URL}', headers=headers)
     logging.info(f"Current server: {json.loads(result.content)['server']['server_type']['name']}")
+    print(json.loads(result.content)['server']['id'])
     return json.loads(result.content)['server']['server_type']['name']
 
 
@@ -73,3 +75,7 @@ def get_all_server_types():
     # pp.pprint(json.loads(result.content))
     return json.loads(result.content)
 
+def get_server_id(name):
+    client = Client(token=api_key)
+    server = client.servers.get_by_name(name)
+    return server.id
