@@ -54,7 +54,7 @@ def get_remote_usage():
     try:
         HOST=ip_address
         COMMAND_VM=  " free | grep Mem | awk '{print $3/$2 * 100.0}' && echo \" \"$[100-$(vmstat 1 2|tail -1|awk '{print $15}')]\"\""
-
+        logging.info(f"2")
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ip_address, 22,  username, password, timeout=3)
@@ -63,10 +63,12 @@ def get_remote_usage():
         while int(stdout.channel.recv_exit_status()) != 0:
             time.sleep(1)
         usage =  stdout.read().decode()
+        logging.info(f"3")
         ssh.close()
         return usage
     except Exception as e:
         logging.DEBUG(str(e))
+        logging.info(f"4")
         write_cpu_usage()
         
 
@@ -85,7 +87,9 @@ def write_cpu_usage():
     timer = 1
     while not checkIfMidnight():
         if should_write_to_file:
+            logging.info(f"1")
             usage = get_remote_usage()
+            logging.info(f"1usage:{usage}")
             if usage:
                 ram_usage = usage.split('\n')[0]
                 cpu_usage = usage.split('\n')[1]
