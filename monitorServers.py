@@ -66,6 +66,7 @@ def get_remote_usage():
         ssh.close()
         return usage
     except Exception as e:
+        logging.DEBUG(str(e))
         write_cpu_usage()
         
 
