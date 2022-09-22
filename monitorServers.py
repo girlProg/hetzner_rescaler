@@ -1,3 +1,4 @@
+from cmath import log
 import time
 from datetime import datetime
 import json
@@ -62,6 +63,7 @@ def get_remote_usage():
         stdin, stdout, stderr = ssh.exec_command(COMMAND_VM, timeout=3)
         while int(stdout.channel.recv_exit_status()) != 0:
             time.sleep(1)
+            logging.info('2.2')
         usage =  stdout.read().decode()
         logging.info(f"3")
         ssh.close()
