@@ -13,7 +13,7 @@ import os
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 logging.basicConfig(filename = os.path.join(ROOT_DIR, 'activitylog.log'),
-                    level = logging.DEBUG,
+                    level = logging.INFO,
                     format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 
 config_file = open(os.path.join(ROOT_DIR, 'config.json'))
